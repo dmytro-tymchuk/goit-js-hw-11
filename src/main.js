@@ -1,11 +1,17 @@
 import axios from 'axios';
 import iziToast from "izitoast";
 import "izitoast/dist/css/iziToast.min.css";
+import SimpleLightbox from "simplelightbox";
+import "simplelightbox/dist/simple-lightbox.min.css";
+
 import { getImagesByQuery } from './js/pixabay-api';
 import { createMarkup } from './js/render-functions';
 
+let lightbox = null;
+
 const form = document.querySelector(".form");
 const gallery = document.querySelector(".gallery");
+const loader = document.querySelector(".loader");
 
 form.addEventListener("submit", handleSubmit);
 function handleSubmit(event) {
@@ -25,7 +31,7 @@ function handleSubmit(event) {
     }
 
     gallery.innerHTML = "";
-
+    loader.classList.remove("hidden");
     getImagesByQuery(userInput)
         .then(res => {
             if (res.length === 0) {
@@ -42,6 +48,17 @@ function handleSubmit(event) {
             }
             
             gallery.innerHTML = createMarkup(res);
+            setTimeout(() => {
+            if (!lightbox) {
+            lightbox = new SimpleLightbox('.gallery a', {
+                captionsData: 'alt',
+                aptionDelay: 250,
+            });
+            } else {
+            lightbox.refresh();
+                }
+            }, 0);
+
             form.reset();
         })
         .catch(error => {
@@ -53,7 +70,10 @@ function handleSubmit(event) {
               color: '#ef4040',
               iconUrl: './img/bi_x-octagon-2.svg',
               maxWidth: 432
-              })
+            })
+        })
+        .finally(() => {
+            loader.classList.add("hidden");
         })
     
     
